@@ -9,6 +9,7 @@ import {
   Monitor,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
+import { ApiStatusBadge } from "@/components/ApiStatusBadge";
 import {
   Sidebar,
   SidebarContent,
@@ -43,6 +44,9 @@ export function AppSidebar() {
           <div>
             <h2 className="text-sm font-semibold text-foreground">Gravity Claw</h2>
             <p className="text-xs text-muted-foreground">Ops Hub</p>
+            <div className="mt-2">
+              <ApiStatusBadge />
+            </div>
           </div>
         </div>
       </SidebarHeader>

@@ -1,15 +1,11 @@
-import { DollarSign, Coins, Bot, ListTodo } from "lucide-react";
+import { DollarSign, Coins, Bot, ListTodo, Activity } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { dashboardMetrics, usageToday, recentActivity } from "@/data/mock-data";
-
-const metricCards = [
-  { title: "Total Cost Today", value: `$${dashboardMetrics.totalCost.toFixed(2)}`, icon: DollarSign, color: "text-success" },
-  { title: "Total Tokens", value: `${(dashboardMetrics.totalTokens / 1000).toFixed(1)}k`, icon: Coins, color: "text-info" },
-  { title: "Active Agents", value: `${dashboardMetrics.activeAgents}/${dashboardMetrics.totalAgents}`, icon: Bot, color: "text-success" },
-  { title: "Open Tasks", value: String(dashboardMetrics.openTasks), icon: ListTodo, color: "text-warning" },
-];
+import { useApi } from "@/hooks/useApi";
+import { getAgents, getPm2Status, checkApiHealth } from "@/lib/api";
+import { useEffect, useState } from "react";
 
 const statusColor: Record<string, string> = {
   success: "bg-success/20 text-success",
@@ -18,6 +14,24 @@ const statusColor: Record<string, string> = {
 };
 
 const Index = () => {
+  const { data: agentsData } = useApi(getAgents);
+  const { data: pm2Data } = useApi(getPm2Status);
+  const [isApiLive, setIsApiLive] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    checkApiHealth().then(setIsApiLive).catch(() => setIsApiLive(false));
+  }, []);
+
+  const activeAgentsCount = agentsData?.agents?.list?.length || 0;
+  const pm2ProcessesCount = pm2Data?.processes?.length || 0;
+
+  const metricCards = [
+    { title: "Active Agents", value: String(activeAgentsCount), icon: Bot, color: "text-success" },
+    { title: "PM2 Processes", value: String(pm2ProcessesCount), icon: ListTodo, color: "text-info" },
+    { title: "API Status", value: isApiLive === null ? "..." : isApiLive ? "Online" : "Offline", icon: Activity, color: isApiLive ? "text-success" : "text-destructive" },
+    { title: "Total Cost Today", value: `$${dashboardMetrics.totalCost.toFixed(2)}`, icon: DollarSign, color: "text-success" },
+  ];
+
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">Dashboard</h1>
